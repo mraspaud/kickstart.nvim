@@ -82,6 +82,10 @@ vim.o.scrolloff = 10
 vim.o.confirm = true
 vim.o.title = true
 
+-- spelling
+vim.o.spell = true
+vim.o.spelllang = "en_gb,en_us,sv,fr"
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -156,7 +160,7 @@ rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require("lazy").setup({
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
+  -- NOTE: Plugins can be added with a link (or for a GitHub repo: 'owner/repo' link).
   "NMAC427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically
 
   -- NOTE: Plugins can also be added by using a table,
@@ -196,18 +200,6 @@ require("lazy").setup({
     --     changedelete = { text = '~' },
     --   },
     -- },
-  },
-  {
-    "NeogitOrg/neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim", -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
-      "nvim-telescope/telescope.nvim",
-    },
-    cmd = "Neogit",
-    keys = {
-      { "<leader>g", "<cmd>Neogit<cr>", desc = "Show Neogit UI" },
-    },
   },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -585,7 +577,6 @@ require("lazy").setup({
       --  When you add blink.cmp, luasnip, etc. Neovim now has *more* capabilities.
       --  So, we create new capabilities with blink.cmp, and then broadcast that to the servers.
       local capabilities = require("blink.cmp").get_lsp_capabilities()
-
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -596,11 +587,40 @@ require("lazy").setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        basedpyright = {},
-        ruff = {},
+        basedpyright = {
+          -- filetypes = { "python" },
+          root_dir = require("lspconfig.util").root_pattern(".git", "pyproject.toml"),
+          settings = {
+            basedpyright = {
+              disableOrganizeImports = true, -- Using Ruff
+              disableTaggedHints = true, -- from https://github.com/astral-sh/ruff-lsp/issues/384#issuecomment-2038623937
+              -- autoImportCompletions = false,
+              analysis = {
+                exclude = { ".venv" },
+                -- autoSearchPaths = true,
+                -- useLibraryCodeForTypes = false, -- This is the one killing your speed
+                -- diagnosticMode = "openFilesOnly", -- Don't analyze files you haven't opened
+                ignore = { "*" }, -- Using Ruff
+                diagnosticSeverityOverrides = {
+                  -- https://github.com/microsoft/pyright/blob/main/docs/configuration.md#type-check-diagnostics-settings
+                  -- reportUndefinedVariable = "none",
+                },
+              },
+            },
+          },
+        },
+        ruff = {
+          filetypes = { "python" },
+          init_options = {
+            settings = {
+              logLevel = "debug",
+              -- Ruff language server settings go here
+            },
+          },
+        },
         debugpy = {},
-        ansiblels = {},
-        yamlls = {},
+        -- ansiblels = {},
+        -- yamlls = {},
         harper_ls = {},
         -- clangd = {},
         -- gopls = {},
@@ -801,7 +821,8 @@ require("lazy").setup({
       -- the rust implementation via `'prefer_rust_with_warning'`
       --
       -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = "lua" },
+      -- fuzzy = { implementation = "lua" },
+      fuzzy = { implementation = "prefer_rust_with_warning" },
 
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
@@ -927,7 +948,7 @@ require("lazy").setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require "kickstart.plugins.indent_line",
   require "kickstart.plugins.lint",
   -- require 'kickstart.plugins.autopairs',
   require "kickstart.plugins.neo-tree",
