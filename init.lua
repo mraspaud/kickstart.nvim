@@ -81,6 +81,8 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 vim.o.title = true
+vim.opt.guifont = "CodeNewRoman Nerd Font:h11"
+vim.opt.termguicolors = true
 
 -- spelling
 vim.o.spell = true
